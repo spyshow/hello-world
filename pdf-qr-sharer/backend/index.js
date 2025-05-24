@@ -5,6 +5,8 @@ const fs = require('fs');
 const qrcode = require('qrcode');
 const ip = require('ip');
 const cors = require('cors'); // Require CORS
+const { v4: uuidv4 } = require('uuid'); // Require uuid
+const { readDB, writeDB } = require('./db'); // Require DB functions
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -41,15 +43,33 @@ app.post('/upload', upload.single('pdfFile'), async (req, res) => {
     // Ensure req.file.originalname is properly encoded for URL
     const encodedFilename = encodeURIComponent(req.file.originalname);
     const pdfUrl = `http://${serverIp}:${PORT}/pdfs/${encodedFilename}`;
-    const userTag = req.body.tag || ''; // 1. Access the tag
+    const userTag = req.body.tag || '';
     const qrCodeDataUrl = await qrcode.toDataURL(pdfUrl);
 
+    // Generate ID and metadata
+    const id = uuidv4();
+    const metadata = {
+      id: id,
+      originalFilename: req.file.originalname,
+      storedFilename: req.file.originalname, // As per current multer setup
+      pdfUrl: pdfUrl,
+      qrCodeDataUrl: qrCodeDataUrl,
+      tag: userTag,
+      uploadTimestamp: new Date().toISOString()
+    };
+
+    // Store metadata in DB
+    const dbData = readDB();
+    dbData.push(metadata);
+    writeDB(dbData);
+
+    // Send response (as it was before, with tag included)
     res.json({
       message: 'File uploaded successfully',
       filename: req.file.originalname,
       pdfUrl: pdfUrl,
       qrCodeDataUrl: qrCodeDataUrl,
-      tag: userTag // 2. Add tag to response
+      tag: userTag
     });
   } catch (error) {
     console.error('Error generating QR code or processing file:', error);
@@ -61,6 +81,32 @@ app.post('/upload', upload.single('pdfFile'), async (req, res) => {
 // Make sure this is also correctly handling potential special characters in filenames if necessary
 // express.static by default uses 'send' which handles Content-Disposition and ETag, and should be fine.
 app.use('/pdfs', express.static(uploadsDir));
+
+// GET endpoint to retrieve all file metadata
+app.get('/files', (req, res) => {
+  try {
+    const dbData = readDB();
+    const { search, tag } = req.query;
+    let filteredData = dbData;
+
+    if (search) {
+      filteredData = filteredData.filter(file => 
+        file.originalFilename && file.originalFilename.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    if (tag) {
+      filteredData = filteredData.filter(file => 
+        file.tag && file.tag.toLowerCase().includes(tag.toLowerCase())
+      );
+    }
+    
+    res.json(filteredData);
+  } catch (error) {
+    console.error('Error retrieving files:', error);
+    res.status(500).json({ message: 'Error retrieving file list from server.' });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {
