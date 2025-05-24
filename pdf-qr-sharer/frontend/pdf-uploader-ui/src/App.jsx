@@ -30,8 +30,6 @@ function App() {
     formData.append('pdfFile', selectedFile);
 
     try {
-      // Assuming the backend is running on localhost:3001
-      // In a real app, you might want to configure this URL
       const response = await fetch('http://localhost:3001/upload', {
         method: 'POST',
         body: formData,
@@ -58,6 +56,10 @@ function App() {
     }
   };
 
+  const handlePrintQrCode = () => {
+    window.print();
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -77,21 +79,33 @@ function App() {
           </div>
         )}
 
+        {/* Printable Area */}
+        <div id="printable-area">
+          {qrCodeDataUrl && (
+            <div className="qr-code-section">
+              <h2>Scan QR Code to Access PDF</h2>
+              <img src={qrCodeDataUrl} alt="QR Code for PDF" />
+              {/* Print button moved outside printable-area logically, but associated here */}
+            </div>
+          )}
+
+          {pdfUrl && (
+            <div className="pdf-link-section">
+              <h2>Or Use This Link</h2>
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+                {pdfUrl}
+              </a>
+            </div>
+          )}
+        </div>
+        
+        {/* Print Button - Placed after printable-area so it's not part of it, but logically related */}
         {qrCodeDataUrl && (
-          <div className="qr-code-section">
-            <h2>Scan QR Code to Access PDF</h2>
-            <img src={qrCodeDataUrl} alt="QR Code for PDF" />
-          </div>
+            <button id="print-qr-button" className="print-button" onClick={handlePrintQrCode}>
+                Print QR Code & Link
+            </button>
         )}
 
-        {pdfUrl && (
-          <div className="pdf-link-section">
-            <h2>Or Use This Link</h2>
-            <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
-              {pdfUrl}
-            </a>
-          </div>
-        )}
       </main>
     </div>
   );
