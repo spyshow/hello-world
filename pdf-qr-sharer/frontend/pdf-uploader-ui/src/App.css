@@ -75,8 +75,8 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.qr-code-section h2,
-.pdf-link-section h2 {
+.qr-code-section h3, /* Updated from h2 to h3 */
+.pdf-link-section h3 { /* Updated from h2 to h3 */
   margin-top: 0;
   color: #333;
 }
@@ -149,7 +149,7 @@ body {
     text-decoration: none !important; /* No underline for cleaner print */
   }
   
-  #printable-area h2 {
+  #printable-area h3 { /* Updated from h2 to h3 */
     font-size: 14pt; /* Adjust heading size for print */
     text-align: center;
   }
