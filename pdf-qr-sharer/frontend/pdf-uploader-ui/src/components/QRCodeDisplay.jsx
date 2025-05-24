@@ -1,6 +1,6 @@
 import React from 'react';
 
-function QRCodeDisplay({ qrCodeDataUrl, pdfUrl, handlePrintQrCode }) {
+function QRCodeDisplay({ qrCodeDataUrl, pdfUrl, handlePrintQrCode, uploadedFileTag }) {
   if (!qrCodeDataUrl) {
     return null;
   }
@@ -17,7 +17,13 @@ function QRCodeDisplay({ qrCodeDataUrl, pdfUrl, handlePrintQrCode }) {
           {pdfUrl}
         </a>
       </div>
-      <button id="print-qr-button" className="print-button" onClick={handlePrintQrCode}>
+      {uploadedFileTag && (
+        <div className="tag-section" style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #eee' }}> {/* Added some more distinct styling */}
+          <h4 style={{ margin: '0 0 5px 0' }}>Tag:</h4> {/* Basic styling for h4 */}
+          <p style={{ margin: '0', fontStyle: 'italic' }}>{uploadedFileTag}</p> {/* Basic styling for p */}
+        </div>
+      )}
+      <button id="print-qr-button" className="print-button" onClick={handlePrintQrCode} style={{ marginTop: '20px' }}>
         Print QR Code & Link
       </button>
     </div>

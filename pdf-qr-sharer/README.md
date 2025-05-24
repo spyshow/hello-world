@@ -10,6 +10,7 @@ PDF QR Sharer is a simple full-stack web application that allows you to upload P
 *   **Serves PDFs Locally:** Uploaded PDFs are stored and served by the backend server.
 *   **Works Offline:** Fully functional within a LAN environment without needing an active internet connection (after initial setup).
 *   **Print QR Code:** Button to print the generated QR code and its associated link for physical sharing or record-keeping.
+*   **Tagging:** Optionally add a text tag to uploaded PDFs, which is displayed with the QR code and link, and included in the printed output.
 
 ## Prerequisites
 
@@ -83,14 +84,14 @@ PDF QR Sharer is a simple full-stack web application that allows you to upload P
 
 ## How it Works
 
-1.  The user selects a PDF file using the frontend interface and clicks "Upload."
-2.  The PDF is sent to the backend server.
+1.  The user selects a PDF file using the frontend interface and optionally enters a text tag.
+2.  The PDF and the tag are sent to the backend server when the user clicks "Upload."
 3.  The backend saves the PDF to the `pdf-qr-sharer/backend/uploads/` directory.
 4.  The backend generates a unique URL pointing to the saved PDF (using its local IP address and port).
 5.  The backend generates a QR code image from this URL.
-6.  The backend sends the PDF URL and the QR code data (as a data URL) back to the frontend.
-7.  The frontend displays the QR code image and the direct link to the PDF.
-8.  The user can then scan the QR code with any device on the same LAN to download or view the PDF, or use the "Print QR Code" button to print this information.
+6.  The backend sends the PDF URL, the QR code data (as a data URL), and the tag back to the frontend.
+7.  The frontend displays the QR code image, the direct link to the PDF, and the tag.
+8.  The user can then scan the QR code with any device on the same LAN to download or view the PDF, or use the "Print QR Code" button to print this information, including the tag.
 
 ## Folder Structure
 
@@ -105,5 +106,6 @@ PDF QR Sharer is a simple full-stack web application that allows you to upload P
     *   `package.json`: Manages frontend dependencies (React, Vite).
     *   `/src`: Contains the React application source code.
         *   `App.jsx`: The main React component for the UI.
+        *   `/components`: Contains reusable UI components.
     *   `vite.config.js`: Vite configuration file.
     *   `index.html`: The main HTML file for the React application.

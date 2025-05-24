@@ -41,13 +41,15 @@ app.post('/upload', upload.single('pdfFile'), async (req, res) => {
     // Ensure req.file.originalname is properly encoded for URL
     const encodedFilename = encodeURIComponent(req.file.originalname);
     const pdfUrl = `http://${serverIp}:${PORT}/pdfs/${encodedFilename}`;
+    const userTag = req.body.tag || ''; // 1. Access the tag
     const qrCodeDataUrl = await qrcode.toDataURL(pdfUrl);
 
     res.json({
       message: 'File uploaded successfully',
       filename: req.file.originalname,
       pdfUrl: pdfUrl,
-      qrCodeDataUrl: qrCodeDataUrl
+      qrCodeDataUrl: qrCodeDataUrl,
+      tag: userTag // 2. Add tag to response
     });
   } catch (error) {
     console.error('Error generating QR code or processing file:', error);

@@ -10,13 +10,17 @@ function App() {
   const [pdfUrl, setPdfUrl] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [uploadedFileTag, setUploadedFileTag] = useState(''); // 1. Add new state variable
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
     setErrorMessage(''); // Clear previous errors
+    setQrCodeDataUrl(''); // Also clear QR/PDF info on new file selection
+    setPdfUrl('');
+    setUploadedFileTag('');
   };
 
-  const handleUpload = async () => {
+  const handleUpload = async (tag) => { // 2. Modify signature to accept tag
     if (!selectedFile) {
       setErrorMessage('Please select a PDF file first.');
       return;
@@ -26,9 +30,11 @@ function App() {
     setErrorMessage('');
     setQrCodeDataUrl('');
     setPdfUrl('');
+    setUploadedFileTag(''); // 5. Clear tag state
 
     const formData = new FormData();
     formData.append('pdfFile', selectedFile);
+    formData.append('tag', tag); // 3. Append tag to FormData
 
     try {
       const response = await fetch('http://localhost:3001/upload', {
@@ -44,6 +50,7 @@ function App() {
       const data = await response.json();
       setQrCodeDataUrl(data.qrCodeDataUrl);
       setPdfUrl(data.pdfUrl);
+      setUploadedFileTag(data.tag || ''); // 4. Set uploadedFileTag from response
       setSelectedFile(null); // Clear the file input
       // Clear the actual file input element by resetting its value if possible, or tell user
       // This is tricky as file input is largely uncontrolled for security reasons
@@ -56,6 +63,10 @@ function App() {
     } catch (error) {
       setErrorMessage(error.message || 'An unexpected error occurred.');
       console.error('Upload error:', error);
+      // Ensure all relevant states are cleared on error
+      setQrCodeDataUrl('');
+      setPdfUrl('');
+      setUploadedFileTag(''); // 5. Clear tag state in catch
     } finally {
       setUploading(false);
     }
@@ -82,6 +93,7 @@ function App() {
           qrCodeDataUrl={qrCodeDataUrl}
           pdfUrl={pdfUrl}
           handlePrintQrCode={handlePrintQrCode}
+          uploadedFileTag={uploadedFileTag} // 6. Pass uploadedFileTag as prop
         />
       </main>
     </div>
