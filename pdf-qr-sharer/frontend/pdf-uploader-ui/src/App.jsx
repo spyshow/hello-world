@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import './App.css';
+import FileUploadForm from './components/FileUploadForm';
+import QRCodeDisplay from './components/QRCodeDisplay';
+import ErrorMessage from './components/ErrorMessage';
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -10,14 +13,12 @@ function App() {
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
-    setErrorMessage(''); // Clear error message when new file is selected
-    setQrCodeDataUrl(''); // Clear previous QR code
-    setPdfUrl(''); // Clear previous PDF URL
+    setErrorMessage(''); // Clear previous errors
   };
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setErrorMessage('Please select a PDF file to upload.');
+      setErrorMessage('Please select a PDF file first.');
       return;
     }
 
@@ -30,68 +31,58 @@ function App() {
     formData.append('pdfFile', selectedFile);
 
     try {
-      // Assuming the backend is running on localhost:3001
-      // In a real app, you might want to configure this URL
       const response = await fetch('http://localhost:3001/upload', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setQrCodeDataUrl(data.qrCodeDataUrl);
-        setPdfUrl(data.pdfUrl);
-        setErrorMessage('');
-      } else {
-        setErrorMessage(data.message || 'File upload failed. Please try again.');
-        setQrCodeDataUrl('');
-        setPdfUrl('');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to upload file. Server returned an error.' }));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      setQrCodeDataUrl(data.qrCodeDataUrl);
+      setPdfUrl(data.pdfUrl);
+      setSelectedFile(null); // Clear the file input
+      // Clear the actual file input element by resetting its value if possible, or tell user
+      // This is tricky as file input is largely uncontrolled for security reasons
+      // For now, clearing selectedFile state is the main part.
+      if (document.querySelector('input[type="file"]')) {
+        document.querySelector('input[type="file"]').value = "";
+      }
+
+
     } catch (error) {
+      setErrorMessage(error.message || 'An unexpected error occurred.');
       console.error('Upload error:', error);
-      setErrorMessage('An error occurred during upload. Check the console and backend server.');
-      setQrCodeDataUrl('');
-      setPdfUrl('');
     } finally {
       setUploading(false);
     }
   };
 
+  const handlePrintQrCode = () => {
+    window.print();
+  };
+
   return (
     <div className="App">
       <header className="App-header">
-        <h1>PDF QR Sharer</h1>
+        <h1>PDF QR Code Sharer</h1>
       </header>
       <main>
-        <div className="upload-section">
-          <input type="file" accept=".pdf" onChange={handleFileChange} disabled={uploading} />
-          <button onClick={handleUpload} disabled={uploading || !selectedFile}>
-            {uploading ? 'Uploading...' : 'Upload PDF'}
-          </button>
-        </div>
-
-        {errorMessage && (
-          <div className="error-message">
-            <p>{errorMessage}</p>
-          </div>
-        )}
-
-        {qrCodeDataUrl && (
-          <div className="qr-code-section">
-            <h2>Scan QR Code to Access PDF</h2>
-            <img src={qrCodeDataUrl} alt="QR Code for PDF" />
-          </div>
-        )}
-
-        {pdfUrl && (
-          <div className="pdf-link-section">
-            <h2>Or Use This Link</h2>
-            <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
-              {pdfUrl}
-            </a>
-          </div>
-        )}
+        <ErrorMessage errorMessage={errorMessage} />
+        <FileUploadForm
+          onFileChange={handleFileChange}
+          handleUpload={handleUpload}
+          selectedFile={selectedFile}
+          uploading={uploading}
+        />
+        <QRCodeDisplay
+          qrCodeDataUrl={qrCodeDataUrl}
+          pdfUrl={pdfUrl}
+          handlePrintQrCode={handlePrintQrCode}
+        />
       </main>
     </div>
   );

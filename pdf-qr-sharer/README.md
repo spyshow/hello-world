@@ -9,6 +9,7 @@ PDF QR Sharer is a simple full-stack web application that allows you to upload P
 *   **LAN Access:** The QR code links to the PDF served by a local backend server, accessible from any device on the same LAN.
 *   **Serves PDFs Locally:** Uploaded PDFs are stored and served by the backend server.
 *   **Works Offline:** Fully functional within a LAN environment without needing an active internet connection (after initial setup).
+*   **Print QR Code:** Button to print the generated QR code and its associated link for physical sharing or record-keeping.
 
 ## Prerequisites
 
@@ -89,7 +90,7 @@ PDF QR Sharer is a simple full-stack web application that allows you to upload P
 5.  The backend generates a QR code image from this URL.
 6.  The backend sends the PDF URL and the QR code data (as a data URL) back to the frontend.
 7.  The frontend displays the QR code image and the direct link to the PDF.
-8.  The user can then scan the QR code with any device on the same LAN to download or view the PDF.
+8.  The user can then scan the QR code with any device on the same LAN to download or view the PDF, or use the "Print QR Code" button to print this information.
 
 ## Folder Structure
 
